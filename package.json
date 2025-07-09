@@ -9,6 +9,5 @@
   "dependencies": {
     "@azure/functions": "^4.0.0",
     "microsoft-cognitiveservices-speech-sdk": "^1.44.1"
-  },
-  "main": "src/{index.js,functions/*.js}"
+  }
 }
