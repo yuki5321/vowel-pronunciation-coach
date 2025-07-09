@@ -23,7 +23,7 @@ module.exports = async function (context, req) {
         SpeechSDK.PronunciationAssessmentGranularity.Phoneme,
         true
     );
-    pronunciationAssessmentConfig.enableProsodyAssessment(); // ← 修正
+    pronunciationAssessmentConfig.enableProsodyAssessment = true; // ← 修正
 
     // 一時ファイルパスの準備
     const tempFilePath = path.join(os.tmpdir(), `audio-${Date.now()}.wav`);
