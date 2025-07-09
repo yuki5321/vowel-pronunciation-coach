@@ -1,5 +1,7 @@
 const SpeechSDK = require("microsoft-cognitiveservices-speech-sdk");
 const fs = require("fs"); // ローカルテスト用に一時的に使用
+const os = require('os');
+const path = require('path');
 
 module.exports = async function (context, req) {
     context.log('JavaScript HTTP trigger function processed a request.');
@@ -17,7 +19,8 @@ module.exports = async function (context, req) {
 
     // Base64デコードして一時ファイルに保存
     const audioData = Buffer.from(req.body.audioBase64, 'base64');
-    const tempFilePath = `/tmp/audio.wav`; // Azure Functionsの書き込み可能ディレクトリ
+    
+    const tempFilePath = path.join(os.tmpdir(), 'audio.wav');
     fs.writeFileSync(tempFilePath, audioData);
 
     // 発音評価の設定
@@ -45,6 +48,33 @@ module.exports = async function (context, req) {
 
         recognizer.close();
         fs.unlinkSync(tempFilePath); // 一時ファイルを削除
+
+        if (result && result.reason === SpeechSDK.ResultReason.RecognizedSpeech && result.properties.getProperty(SpeechSDK.PropertyId.SpeechServiceResponse_JsonResult)) {
+    
+            const pronunciationResult = SpeechSDK.PronunciationAssessmentResult.fromResult(result);
+    
+            context.res = {
+                headers: { 'Content-Type': 'application/json' },
+                body: {
+                    accuracyScore: pronunciationResult.accuracyScore,
+                    fluencyScore: pronunciationResult.fluencyScore,
+                    prosodyScore: pronunciationResult.prosodyScore,
+                    completenessScore: pronunciationResult.completenessScore,
+                    pronunciationScore: pronunciationResult.pronunciationScore,
+                    words: pronunciationResult.detailResult.Words,
+                }
+            };
+        } else {
+        // 評価結果が取得できなかった場合
+            context.res = {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+                body: { 
+                    error: "Pronunciation assessment could not be performed.",
+                    reason: "The audio might be silent, too different from the reference text, or of an unsupported format."
+                }
+            };
+        }
 
         const pronunciationResult = SpeechSDK.PronunciationAssessmentResult.fromResult(result);
 
