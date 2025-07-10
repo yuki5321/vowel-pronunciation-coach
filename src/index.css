@@ -59,3 +59,34 @@ p.translation { margin-bottom: 2rem; }
 .error-message { color: var(--error-color); margin-top: 1rem; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
+/* src/index.css の末尾に追記 */
+
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.nav-btn {
+  flex-grow: 1;
+  background-color: #ecf0f1;
+  color: var(--primary-text);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background-color: #e0e6ed;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.nav-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
