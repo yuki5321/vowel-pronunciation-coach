@@ -43,7 +43,7 @@ const App = () => {
         reader.readAsDataURL(audioBlob);
         reader.onloadend = async () => {
             const audioBase64 = reader.result.split(',')[1];
-            const apiUrl = 'http://localhost:7071/api/evaluatePronunciation';
+            const apiUrl = '/api/evaluatePronunciation';
             try {
                 const response = await axios.post(apiUrl, { referenceText, audioBase64 });
                 setFeedback(response.data);
