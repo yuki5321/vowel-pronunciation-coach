@@ -90,3 +90,15 @@ p.translation { margin-bottom: 2rem; }
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+.feedback-header.pass { 
+  color: #f39c12; /* オレンジ色など */
+}
+
+.feedback-header.fail { 
+  color: #e74c3c; /* 赤色など */
+}
+
+.feedback-header.perfect { 
+  color: #2ecc71; /* 緑色など */
+}
