@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './index.css'; 
 import App from './App'; // App.jsを読み込む
 
 // public/index.html の <div id="root"></div> を見つける
