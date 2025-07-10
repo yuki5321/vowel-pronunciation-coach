@@ -10,7 +10,6 @@
   "dependencies": {
     "@azure/functions": "^4.0.0",
     "axios": "^1.10.0",
-    "microsoft-cognitiveservices-speech-sdk": "^1.44.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-scripts": "^5.0.1",

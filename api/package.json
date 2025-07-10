@@ -1,0 +1,9 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "Azure Functions API",
+  "main": "evaluatePronunciation/index.js",
+  "dependencies": {
+    "microsoft-cognitiveservices-speech-sdk": "^1.37.0"
+  }
+}

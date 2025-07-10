@@ -28,7 +28,7 @@ jobs:
           action: "upload"
           ###### Repository/Build Configurations ######
           app_location: "/" # App source code path
-          api_location: "evaluatePronunciation" # ✅ ここを修正しました！
+          api_location: "api" # ✅ ここを修正しました！
           output_location: "build" # Built app content directory
           ###### End of Repository/Build Configurations ######
 
