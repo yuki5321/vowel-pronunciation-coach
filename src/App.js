@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import Recorder from 'recorder-js'; // 追加
+import Recorder from 'recorder-js';
 
 // --- アイコンコンポーネント ---
 const MicIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.49 6-3.31 6-6.72h-1.7z" /></svg> );
@@ -9,11 +9,25 @@ const CrossIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" fill="currentC
 
 // --- 練習データ ---
 const PRACTICE_ITEMS = [
-    { type: 'pair', wordS: 'sea', ipaS: '/siː/', wordSh: 'she', ipaSh: '/ʃiː/', translation: '海 / 彼女' },
-    { type: 'pair', wordS: 'seat', ipaS: '/siːt/', wordSh: 'sheet', ipaSh: '/ʃiːt/', translation: '席 / シーツ' },
-    { type: 'pair', wordS: 'sell', ipaS: '/sel/', wordSh: 'shell', ipaSh: '/ʃel/', translation: '売る / 貝殻' },
-    { type: 'pair', wordS: 'self', ipaS: '/self/', wordSh: 'shelf', ipaSh: '/ʃelf/', translation: '自己 / 棚' },
-    { type: 'sentence', text: 'She sells seashells by the seashore.', ipa: '/ʃiː selz ˈsiːʃelz baɪ ðə ˈsiːʃɔːr/', translation: '彼女は海岸で貝殻を売る' },
+    // æ vs e (had - head, pan - pen, bad - bed, man - men, sad - said)
+    { type: 'pair', word1: 'had', ipa1: '/hæd/', word2: 'head', ipa2: '/hed/', translation: '持っていた / 頭' },
+    { type: 'pair', word1: 'pan', ipa1: '/pæn/', word2: 'pen', ipa2: '/pen/', translation: 'フライパン / ペン' },
+    { type: 'pair', word1: 'bad', ipa1: '/bæd/', word2: 'bed', ipa2: '/bed/', translation: '悪い / ベッド' },
+    { type: 'pair', word1: 'man', ipa1: '/mæn/', word2: 'men', ipa2: '/men/', translation: '男 / 男性たち' },
+    { type: 'pair', word1: 'sad', ipa1: '/sæd/', word2: 'said', ipa2: '/sed/', translation: '悲しい / 言った' },
+    
+    // æ vs ɑ (hat - hot, cap - cop, sang - song)
+    { type: 'pair', word1: 'hat', ipa1: '/hæt/', word2: 'hot', ipa2: '/hɑt/', translation: '帽子 / 熱い' },
+    { type: 'pair', word1: 'cap', ipa1: '/kæp/', word2: 'cop', ipa2: '/kɑp/', translation: '帽子 / 警察官' },
+    { type: 'pair', word1: 'sang', ipa1: '/sæŋ/', word2: 'song', ipa2: '/sɑŋ/', translation: '歌った / 歌' },
+    
+    // ʌ vs ɑ (hut - hot, luck - lock, sung - song)
+    { type: 'pair', word1: 'hut', ipa1: '/hʌt/', word2: 'hot', ipa2: '/hɑt/', translation: '小屋 / 熱い' },
+    { type: 'pair', word1: 'luck', ipa1: '/lʌk/', word2: 'lock', ipa2: '/lɑk/', translation: '運 / 鍵' },
+    { type: 'pair', word1: 'sung', ipa1: '/sʌŋ/', word2: 'song', ipa2: '/sɑŋ/', translation: '歌った / 歌' },
+    
+    // 文章練習
+    { type: 'sentence', text: 'My boss often takes a bus to fish for bass in the pond.', ipa: '/maɪ bɑs ˈɔfən teɪks ə bʌs tu fɪʃ fɔr bæs ɪn ðə pɑnd/', translation: '私の上司はよくバスに乗って池でバスを釣りに行く' },
 ];
 
 const App = () => {
@@ -26,6 +40,37 @@ const App = () => {
     const audioChunks = useRef([]);
     const audioContextRef = useRef(null);
     const recorderRef = useRef(null);
+
+    // 音素レベルの評価に基づいたアドバイスを生成する関数
+    const generatePhonemeAdvice = (phonemes) => {
+        if (!phonemes || phonemes.length === 0) return null;
+
+        const allPhonemes = phonemes.flatMap(wordData => wordData.phonemes);
+        const lowScorePhonemes = allPhonemes.filter(p => p.accuracyScore < 60);
+        const mediumScorePhonemes = allPhonemes.filter(p => p.accuracyScore >= 60 && p.accuracyScore < 80);
+
+        if (lowScorePhonemes.length > 0) {
+            const problematicPhonemes = lowScorePhonemes.map(p => p.phoneme).join(', ');
+            return {
+                type: 'improvement',
+                message: `特に ${problematicPhonemes} の発音を練習しましょう。`,
+                color: 'incorrect'
+            };
+        } else if (mediumScorePhonemes.length > 0) {
+            const improvingPhonemes = mediumScorePhonemes.map(p => p.phoneme).join(', ');
+            return {
+                type: 'good',
+                message: `${improvingPhonemes} の発音が良くなっています。さらに練習しましょう！`,
+                color: 'pass'
+            };
+        } else {
+            return {
+                type: 'excellent',
+                message: '素晴らしい発音です！完璧に近いです。',
+                color: 'correct'
+            };
+        }
+    };
 
     const analyzeWithAzure = async (audioBlob) => {
         // APIに送るお手本テキストを決定
@@ -43,15 +88,72 @@ const App = () => {
         reader.readAsDataURL(audioBlob);
         reader.onloadend = async () => {
             const audioBase64 = reader.result.split(',')[1];
-            const apiUrl = '/api/evaluatePronunciation';
+            
+            // 開発環境とプロダクション環境でAPIエンドポイントを切り替え
+            const isDevelopment = process.env.NODE_ENV === 'development';
+            const apiUrl = isDevelopment 
+                ? 'http://localhost:7071/api/evaluatePronunciation'
+                : '/api/evaluatePronunciation';
+            
             try {
-                const response = await axios.post(apiUrl, { referenceText, audioBase64 });
+                const response = await axios.post(apiUrl, { 
+                    referenceText, 
+                    audioBase64 
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
                 setFeedback(response.data);
                 setStatus('result');
             } catch (err) {
+                console.error('API Error:', err);
                 const errorMessage = err.response?.data?.details || err.message || "An unknown error occurred.";
-                setError(`API Error: ${errorMessage}`);
-                setStatus('idle');
+                
+                // 開発環境でAzure Functionsが動作しない場合のモックレスポンス
+                if (isDevelopment && err.response?.status === 404) {
+                    console.log('Using mock response for development');
+                    const mockResponse = {
+                        accuracyScore: Math.floor(Math.random() * 40) + 60, // 60-100のランダムスコア
+                        fluencyScore: Math.floor(Math.random() * 40) + 60,
+                        prosodyScore: Math.floor(Math.random() * 40) + 60,
+                        completenessScore: Math.floor(Math.random() * 40) + 60,
+                        pronunciationScore: Math.floor(Math.random() * 40) + 60,
+                        recognizedText: referenceText, // モックでは参照テキストと同じ
+                        words: [
+                            {
+                                Word: referenceText,
+                                PronunciationAssessment: {
+                                    AccuracyScore: Math.floor(Math.random() * 40) + 60
+                                }
+                            }
+                        ],
+                        phonemes: [
+                            {
+                                word: referenceText,
+                                phonemes: [
+                                    {
+                                        phoneme: '/h/',
+                                        accuracyScore: Math.floor(Math.random() * 40) + 60
+                                    },
+                                    {
+                                        phoneme: '/æ/',
+                                        accuracyScore: Math.floor(Math.random() * 40) + 60
+                                    },
+                                    {
+                                        phoneme: '/d/',
+                                        accuracyScore: Math.floor(Math.random() * 40) + 60
+                                    }
+                                ]
+                            }
+                        ]
+                    };
+                    setFeedback(mockResponse);
+                    setStatus('result');
+                } else {
+                    setError(`API Error: ${errorMessage}`);
+                    setStatus('idle');
+                }
             }
         };
     };
@@ -123,33 +225,33 @@ const App = () => {
     return (
         <div className="main-container">
             <header className="header">
-                <h1 className="app-title">S/SH Pronunciation Coach</h1>
-                <p className="app-subtitle">Practice your /s/ and /ʃ/ sounds</p>
+                <h1 className="app-title">Vowel Pronunciation Coach</h1>
+                <p className="app-subtitle">Practice your vowel sounds: æ, e, ɑ, ʌ</p>
             </header>
             <main className="coach-card">
                 {currentItem.type === 'pair' ? (
                     <>
                         <div className="pair-container">
                             <div className="word-card">
-                                <h2 className="word">{currentItem.wordS}</h2>
-                                <p className="ipa">{currentItem.ipaS}</p>
+                                <h2 className="word">{currentItem.word1}</h2>
+                                <p className="ipa">{currentItem.ipa1}</p>
                                 <button
-                                    className={`record-btn ${isRecording && activeWord === currentItem.wordS ? 'recording' : ''}`}
-                                    onClick={() => handleRecord(currentItem.wordS)}
-                                    disabled={isAnalyzing || (isRecording && activeWord !== currentItem.wordS)}
-                                    aria-label={`Record pronunciation for ${currentItem.wordS}`}
+                                    className={`record-btn ${isRecording && activeWord === currentItem.word1 ? 'recording' : ''}`}
+                                    onClick={() => handleRecord(currentItem.word1)}
+                                    disabled={isAnalyzing || (isRecording && activeWord !== currentItem.word1)}
+                                    aria-label={`Record pronunciation for ${currentItem.word1}`}
                                 >
                                     <MicIcon />
                                 </button>
                             </div>
                             <div className="word-card">
-                                <h2 className="word">{currentItem.wordSh}</h2>
-                                <p className="ipa">{currentItem.ipaSh}</p>
+                                <h2 className="word">{currentItem.word2}</h2>
+                                <p className="ipa">{currentItem.ipa2}</p>
                                 <button
-                                    className={`record-btn ${isRecording && activeWord === currentItem.wordSh ? 'recording' : ''}`}
-                                    onClick={() => handleRecord(currentItem.wordSh)}
-                                    disabled={isAnalyzing || (isRecording && activeWord !== currentItem.wordSh)}
-                                    aria-label={`Record pronunciation for ${currentItem.wordSh}`}
+                                    className={`record-btn ${isRecording && activeWord === currentItem.word2 ? 'recording' : ''}`}
+                                    onClick={() => handleRecord(currentItem.word2)}
+                                    disabled={isAnalyzing || (isRecording && activeWord !== currentItem.word2)}
+                                    aria-label={`Record pronunciation for ${currentItem.word2}`}
                                 >
                                     <MicIcon />
                                 </button>
@@ -179,9 +281,9 @@ const App = () => {
                 
                 {/* ▼▼▼ ここが結果表示エリアです ▼▼▼ */}
                 <div className={`feedback-container ${status === 'result' ? 'result' : ''}`} aria-live="polite">
-                    {status === 'idle' && <p>Press a mic to start recording.</p>}
-                    {status === 'recording' && <p>Listening... Press the mic again to stop.</p>}
-                    {status === 'analyzing' && <div className="loader" aria-label="Analyzing pronunciation"></div>}
+                    {status === 'idle' && <p>マイクボタンを押して録音を開始してください。</p>}
+                    {status === 'recording' && <p>録音中... もう一度マイクボタンを押して停止してください。</p>}
+                    {status === 'analyzing' && <div className="loader" aria-label="発音を分析中"></div>}
                     {status === 'result' && feedback && (
                         (() => {
                             const score = feedback.accuracyScore;
@@ -203,7 +305,7 @@ const App = () => {
                                 return (
                                     <div className="feedback-header incorrect">
                                         <CrossIcon/>
-                                        <span>Keep Trying!</span>
+                                        <span>もう一度練習しましょう！</span>
                                     </div>
                                 );
                             }
@@ -211,17 +313,70 @@ const App = () => {
                     )}
                     {/* スコア表示は共通 */}
                     {status === 'result' && feedback && (
-                        <p className="feedback-text">Accuracy Score: <strong>{feedback.accuracyScore}</strong></p>
+                        <>
+                            <p className="feedback-text">正確性スコア: <strong>{feedback.accuracyScore}</strong></p>
+                            
+                            {/* 認識されたテキストの表示 */}
+                            {feedback.recognizedText && (
+                                <div className="recognition-details">
+                                    <h4>認識されたテキスト:</h4>
+                                    <p className="recognized-text">{feedback.recognizedText}</p>
+                                </div>
+                            )}
+                            
+
+                            
+                            {/* 音素レベルの認識結果 */}
+                            {feedback.phonemes && feedback.phonemes.length > 0 && (
+                                <div className="phoneme-details">
+                                    <h4>音素レベルの認識:</h4>
+                                    <div className="phonemes-list">
+                                        {feedback.phonemes.map((wordData, wordIndex) => (
+                                            <div key={wordIndex} className="word-phonemes">
+                                                <div className="word-header">
+                                                    <span className="word-text">{wordData.word}</span>
+                                                </div>
+                                                <div className="phonemes-display">
+                                                    {wordData.phonemes.map((phoneme, phonemeIndex) => (
+                                                        <span 
+                                                            key={phonemeIndex} 
+                                                            className={`phoneme ${phoneme.accuracyScore >= 80 ? 'correct' : phoneme.accuracyScore >= 60 ? 'pass' : 'incorrect'}`}
+                                                            title={`スコア: ${phoneme.accuracyScore || 'N/A'}`}
+                                                        >
+                                                            {phoneme.phoneme}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    
+                                    {/* 音素レベルの評価に基づいたアドバイス */}
+                                    {(() => {
+                                        const advice = generatePhonemeAdvice(feedback.phonemes);
+                                        if (advice) {
+                                            return (
+                                                <div className={`phoneme-advice ${advice.color}`}>
+                                                    <h5>アドバイス:</h5>
+                                                    <p>{advice.message}</p>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
                 {/* ▲▲▲ ここまでが結果表示エリアです ▲▲▲ */}
 
                 <div className="navigation-buttons">
                     <button className="nav-btn" onClick={handlePreviousItem} disabled={isAnalyzing || isRecording}>
-                        &larr; Previous
+                        &larr; 前へ
                     </button>
                     <button className="nav-btn" onClick={handleNextItem} disabled={isAnalyzing || isRecording}>
-                        Next &rarr;
+                        次へ &rarr;
                     </button>
                 </div>
                 {error && <p className="error-message">{error}</p>}

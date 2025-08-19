@@ -6,6 +6,22 @@ const path = require('path');
 module.exports = async function (context, req) {
     context.log('JavaScript HTTP trigger function processed a request.');
 
+    // CORSヘッダーを設定
+    context.res = {
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+        }
+    };
+
+    // OPTIONSリクエスト（プリフライト）の処理
+    if (req.method === 'OPTIONS') {
+        context.res.status = 200;
+        return;
+    }
+
     const referenceText = req.body.referenceText;
     if (!referenceText || !req.body.audioBase64) {
         context.res = {
@@ -50,21 +66,42 @@ module.exports = async function (context, req) {
             const pronunciationResult = SpeechSDK.PronunciationAssessmentResult.fromResult(result);
             
             context.res = {
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type'
+                },
                 body: {
                     accuracyScore: pronunciationResult.accuracyScore,
                     fluencyScore: pronunciationResult.fluencyScore,
                     prosodyScore: pronunciationResult.prosodyScore,
                     completenessScore: pronunciationResult.completenessScore,
                     pronunciationScore: pronunciationResult.pronunciationScore,
+                    recognizedText: result.text, // 認識されたテキストを追加
                     words: pronunciationResult.detailResult.Words,
+                    phonemes: pronunciationResult.detailResult.Words?.map(word => ({
+                        word: word.Word,
+                        phonemes: word.Syllables?.map(syllable => 
+                            syllable.Phonemes?.map(phoneme => ({
+                                phoneme: phoneme.Phoneme,
+                                accuracyScore: phoneme.PronunciationAssessment?.AccuracyScore,
+                                errorType: phoneme.PronunciationAssessment?.ErrorType
+                            }))
+                        ).flat().filter(Boolean) || []
+                    })) || []
                 }
             };
         } else {
             // 評価結果が取得できなかった場合
             context.res = {
                 status: 400,
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                    'Access-Control-Allow-Headers': 'Content-Type'
+                },
                 body: { 
                     error: "Pronunciation assessment could not be performed.",
                     reason: result ? SpeechSDK.ResultReason[result.reason] : "Unknown",
@@ -77,7 +114,12 @@ module.exports = async function (context, req) {
         context.log.error("An unexpected error occurred:", error);
         context.res = {
             status: 500,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            },
             body: { 
                 error: "An internal server error occurred while processing the audio.",
                 details: error.message

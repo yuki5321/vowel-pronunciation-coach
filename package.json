@@ -1,11 +1,13 @@
 {
-  "name": "s-sh-recognition-app-azure",
+  "name": "vowel-pronunciation-coach",
   "version": "1.0.0",
-  "description": "",
+  "description": "English vowel pronunciation practice application",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "echo \"No tests yet...\""
+    "test": "echo \"No tests yet...\"",
+    "start:api": "func start --cors http://localhost:3000",
+    "dev": "concurrently \"npm run start\" \"npm run start:api\""
   },
   "dependencies": {
     "@azure/functions": "^4.0.0",
@@ -14,6 +16,9 @@
     "react-dom": "^19.1.0",
     "react-scripts": "^5.0.1",
     "recorder-js": "^1.0.7"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   },
   "browserslist": {
     "production": [
