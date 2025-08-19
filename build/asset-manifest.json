@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/vowel-pronunciation-coach/static/css/main.40eaa41d.css",
+    "main.js": "/vowel-pronunciation-coach/static/js/main.5668f137.js",
+    "index.html": "/vowel-pronunciation-coach/index.html",
+    "main.40eaa41d.css.map": "/vowel-pronunciation-coach/static/css/main.40eaa41d.css.map",
+    "main.5668f137.js.map": "/vowel-pronunciation-coach/static/js/main.5668f137.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.40eaa41d.css",
+    "static/js/main.5668f137.js"
+  ]
+}
