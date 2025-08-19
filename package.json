@@ -2,7 +2,7 @@
   "name": "vowel-pronunciation-coach",
   "version": "1.0.0",
   "description": "English vowel pronunciation practice application",
-  "homepage": "https://yuki5321.github.io/vowel-pronunciation-coach",
+  "homepage": ".",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
