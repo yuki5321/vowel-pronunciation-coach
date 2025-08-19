@@ -5,5 +5,9 @@
   "main": "evaluatePronunciation/index.js",
   "dependencies": {
     "microsoft-cognitiveservices-speech-sdk": "^1.37.0"
+  },
+  "scripts": {
+    "start": "func start",
+    "build": "echo 'No build step required'"
   }
 }
