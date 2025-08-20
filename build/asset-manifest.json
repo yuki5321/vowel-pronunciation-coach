@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/vowel-pronunciation-coach/static/css/main.40eaa41d.css",
-    "main.js": "/vowel-pronunciation-coach/static/js/main.5668f137.js",
-    "index.html": "/vowel-pronunciation-coach/index.html",
-    "main.40eaa41d.css.map": "/vowel-pronunciation-coach/static/css/main.40eaa41d.css.map",
-    "main.5668f137.js.map": "/vowel-pronunciation-coach/static/js/main.5668f137.js.map"
+    "main.css": "./static/css/main.40eaa41d.css",
+    "main.js": "./static/js/main.71825640.js",
+    "index.html": "./index.html",
+    "main.40eaa41d.css.map": "./static/css/main.40eaa41d.css.map",
+    "main.71825640.js.map": "./static/js/main.71825640.js.map"
   },
   "entrypoints": [
     "static/css/main.40eaa41d.css",
-    "static/js/main.5668f137.js"
+    "static/js/main.71825640.js"
   ]
 }
