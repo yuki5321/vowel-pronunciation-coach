@@ -2,13 +2,16 @@
   "routes": [
     {
       "route": "/api/*",
-      "methods": ["POST"],
       "allowedRoles": ["anonymous"]
     }
   ],
-  "responseOverrides": {
-    "404": {
-      "rewrite": "/index.html"
+  "navigationFallback": {
+    "rewrite": "/index.html"
+  },
+  "platformErrorOverrides": [
+    {
+      "errorType": "NotFound",
+      "serve": "/index.html"
     }
-  }
+  ]
 }
