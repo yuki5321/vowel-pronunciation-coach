@@ -131,4 +131,15 @@ module.exports = async function (context, req) {
             fs.unlinkSync(tempFilePath);
         }
     }
+
+    const wav = fs.readFileSync(tempFilePath);
+    // WAVヘッダーのサンプリングレート部分を出力（44バイト目から4バイト）
+    const sampleRate = wav.readUInt32LE(24);
+    context.log("WAV sampleRate:", sampleRate);
+    // チャンネル数（22バイト目から2バイト）
+    const numChannels = wav.readUInt16LE(22);
+    context.log("WAV numChannels:", numChannels);
+    // ビット深度（34バイト目から2バイト）
+    const bitDepth = wav.readUInt16LE(34);
+    context.log("WAV bitDepth:", bitDepth);
 };
