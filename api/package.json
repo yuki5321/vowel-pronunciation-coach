@@ -8,6 +8,6 @@
   },
   "scripts": {
     "start": "func start",
-    "build": "echo 'No build step required'"
+    "build": "echo 'Azure Functions build completed'"
   }
 }
