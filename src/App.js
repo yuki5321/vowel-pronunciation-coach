@@ -88,6 +88,7 @@ const App = () => {
         reader.readAsDataURL(audioBlob);
         reader.onloadend = async () => {
             const audioBase64 = reader.result.split(',')[1];
+            console.log("audioBase64 length:", audioBase64.length); // 追加
             
             // 開発環境とプロダクション環境でAPIエンドポイントを切り替え
             const isDevelopment = process.env.NODE_ENV === 'development';
