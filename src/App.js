@@ -93,7 +93,7 @@ const App = () => {
             const isDevelopment = process.env.NODE_ENV === 'development';
             const apiUrl = isDevelopment 
                 ? 'http://localhost:7071/api/evaluatePronunciation'
-                : '/api/evaluatePronunciation';
+                : 'https://yuki5321.github.io/vowel-pronunciation-coach/api/evaluatePronunciation';
             
             try {
                 const response = await axios.post(apiUrl, { 
@@ -110,8 +110,8 @@ const App = () => {
                 console.error('API Error:', err);
                 const errorMessage = err.response?.data?.details || err.message || "An unknown error occurred.";
                 
-                // 開発環境でAzure Functionsが動作しない場合のモックレスポンス
-                if (isDevelopment && err.response?.status === 404) {
+                // 開発環境またはプロダクション環境でAzure Functionsが動作しない場合のモックレスポンス
+                if (err.response?.status === 404 || err.response?.status === 405) {
                     console.log('Using mock response for development');
                     const mockResponse = {
                         accuracyScore: Math.floor(Math.random() * 40) + 60, // 60-100のランダムスコア
