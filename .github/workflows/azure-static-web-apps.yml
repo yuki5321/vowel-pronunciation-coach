@@ -1,13 +1,8 @@
 name: Azure Static Web Apps CI/CD
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
-    branches:
-      - main
+  # 一時的に無効化
+  workflow_dispatch: # 手動実行のみ許可
 
 jobs:
   build_and_deploy_job:
