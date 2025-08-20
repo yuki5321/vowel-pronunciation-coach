@@ -93,7 +93,7 @@ const App = () => {
             const isDevelopment = process.env.NODE_ENV === 'development';
             const apiUrl = isDevelopment 
                 ? 'http://localhost:7071/api/evaluatePronunciation'
-                : 'https://yuki5321.github.io/vowel-pronunciation-coach/api/evaluatePronunciation';
+                : 'https://vowel-pronunciation-coach.azurestaticapps.net/api/evaluatePronunciation';
             
             try {
                 const response = await axios.post(apiUrl, { 
