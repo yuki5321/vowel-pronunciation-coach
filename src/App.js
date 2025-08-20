@@ -172,7 +172,7 @@ const App = () => {
 
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+            audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
             recorderRef.current = new Recorder(audioContextRef.current, { type: 'wav' });
             await recorderRef.current.init(stream);
             recorderRef.current.start();
