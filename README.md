@@ -214,3 +214,7 @@ hat-hut-hot-recognition-app/
 ---
 
 **🎉 楽しい発音練習をお楽しみください！**
+
+---
+
+**Last Updated**: 2024-08-19 - Azure Static Web Apps deployment configured
